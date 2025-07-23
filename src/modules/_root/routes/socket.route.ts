@@ -1,6 +1,21 @@
 import type { RouteOptions } from "fastify";
+import type * as WebSocket from "ws";
 import type { IncomingMessage, Server, ServerResponse } from "http";
 import { SocketMessage } from "@proto";
+import { EntityNotFoundError, NotAuthorizedError } from "@core/errors/api";
+import { UserRole } from "@models";
+import { translate } from "@utils";
+
+const clientMeta = new WeakMap<
+    WebSocket.WebSocket,
+    {
+        lastPing: number;
+        rtt: number;
+        pingSamples: number[];
+        offset: number;
+        offsetSamples: number[];
+    }
+>();
 
 export const socket: RouteOptions<
     Server,
@@ -23,56 +38,171 @@ export const socket: RouteOptions<
     config: {
         rateLimit: {
             max: 3,
-            timeWindow: 1000
+            timeWindow: "1s"
         }
     },
     handler(request, response) {
         return response.send();
     },
     wsHandler(socket, request) {
-        /*socket.binaryType = "arraybuffer";
-        socket.id = request.query.z;
-
+        socket.send(request.query.z);
         socket.on("message", (data, isBinary) => {
-            console.log(
-                SocketMessage.encode({
-                    ping: { timestamp: Date.now() }
-                }).finish()
-            );
-            if (!isBinary) throw Error("string");
-
-            const message = SocketMessage.decode(
-                new Uint8Array(data as ArrayBuffer)
+            const json = JSON.parse(data.toString("utf-8"));
+            const operation = request.server.operations.find(
+                (op) => op.payload === json.payload
             );
 
-            if (Object.keys(message).length !== 1) throw Error("validation");
+            if (!operation) return;
 
-            switch (message.payload) {
-                case "init":
-                    const { init } = message;
-                    if (!init) throw Error("validation");
-
-                    const { id } = init;
-                    if (!id) throw new Error("validation");
-                    if (id?.length !== 8) throw new Error("validation");
-
-                    socket.id = id;
-                    break;
-                case "ping":
-                    if (!message.ping) throw Error("validation");
-                    break;
-                case "pong":
-                    if (!message.pong) throw Error("validation");
-                    break;
-            }
-
-            socket.send(
-                SocketMessage.encode({
-                    op: 2,
-                    ping: { timestamp: Date.now() }
-                }).finish()
-            );
+            operation
+                .handler(json, socket, request)
+                .catch((err) => console.error(err));
         });
-        socket.on("ping", () => socket.pong());*/
+
+        // const f = setInterval(() => {
+        //     const meta = clientMeta.get(socket);
+        //     console.log(meta);
+        //     if (!meta || meta.pingSamples.length < 2)
+        //         return console.log(`jitter: 0`);
+
+        //     const samples = meta.pingSamples;
+        //     const avg = samples.reduce((a, b) => a + b, 0) / samples.length;
+        //     const variance =
+        //         samples.reduce((acc, v) => acc + Math.pow(v - avg, 2), 0) /
+        //         (samples.length - 1);
+
+        //     console.log(`jitter: ${Math.sqrt(variance)}`);
+        // }, 10000);
+        // //socket.binaryType = "arraybuffer";
+        // //socket.id = request.query.z;
+
+        // clientMeta.set(socket, {
+        //     lastPing: 0,
+        //     rtt: 0,
+        //     pingSamples: [],
+        //     offset: 0,
+        //     offsetSamples: []
+        // });
+
+        // socket.on("message", (data, isBinary) => {
+        //     //if (!isBinary) throw Error("non binary");
+
+        //     /*const message = SocketMessage.decode(
+        //         new Uint8Array(data as ArrayBuffer)
+        //     );*/
+        //     const message = JSON.parse(data.toString());
+
+        //     /*if (
+        //         Object.keys(message).filter(
+        //             (k) => message[k as keyof typeof message] !== null
+        //         ).length !== 1
+        //     ) {;
+        //         return socket.close(1003, "Invalid message structure");
+        //     }*/
+
+        //     //if (Object.keys(message).length !== 1) throw Error("validation");
+
+        //     switch (message.payload) {
+        //         case "init": {
+        //             const { id } = message.init || {};
+        //             if (!id || id.length !== 8) throw new Error("validation");
+        //             break;
+        //         }
+
+        //         case "place": {
+        //             if (!request.user) throw new NotAuthorizedError();
+
+        //             const {
+        //                 x,
+        //                 y,
+        //                 color
+        //             }: {
+        //                 x: number;
+        //                 y: number;
+        //                 color: [number, number, number];
+        //             } = message;
+
+        //             const pixel = request.server.canvas.getPixel({
+        //                 x,
+        //                 y
+        //             });
+
+        //             if (!pixel) throw new EntityNotFoundError("pixel");
+
+        //             const tag =
+        //                 request.user.role !== UserRole.User
+        //                     ? null
+        //                     : request.user.tag;
+
+        //             request.server.canvas.setPixel({
+        //                 x,
+        //                 y,
+        //                 color: translate.RGB(color),
+        //                 tag,
+        //                 author: request.user._id
+        //             });
+
+        //             break;
+        //         }
+
+        //         case "ping": {
+        //             const meta = clientMeta.get(socket);
+        //             const clientTime = message.timestamp; //message.ping!.timestamp!;
+        //             if (
+        //                 !meta ||
+        //                 !message.timestamp /*!message.ping?.timestamp*/
+        //             )
+        //                 throw new Error("invalid ping payload");
+
+        //             const serverReceive = Date.now();
+        //             const rtt = serverReceive - clientTime;
+        //             const serverSend = Date.now();
+        //             const offset =
+        //                 (serverReceive + serverSend) / 2 - clientTime;
+
+        //             meta.lastPing = serverReceive;
+        //             meta.rtt = rtt;
+        //             meta.pingSamples.push(rtt);
+        //             meta.offsetSamples.push(offset);
+
+        //             if (meta.pingSamples.length > 10) meta.pingSamples.shift();
+        //             if (meta.offsetSamples.length > 10)
+        //                 meta.offsetSamples.shift();
+
+        //             const sortedOffsets = [...meta.offsetSamples].sort(
+        //                 (a, b) => a - b
+        //             );
+        //             const midOffset = Math.floor(sortedOffsets.length / 2);
+        //             meta.offset =
+        //                 sortedOffsets.length % 2 === 0
+        //                     ? (sortedOffsets[midOffset - 1] +
+        //                           sortedOffsets[midOffset]) /
+        //                       2
+        //                     : sortedOffsets[midOffset];
+
+        //             socket.send(
+        //                 SocketMessage.encode({
+        //                     pong: { clientTime, serverReceive, serverSend }
+        //                 }).finish()
+        //             );
+
+        //             break;
+        //         }
+
+        //         case "pong":
+        //             if (!message.pong) throw Error("validation");
+        //             break;
+
+        //         default:
+        //             throw new Error("unexcepted");
+        //     }
+        // });
+
+        // socket.on("close", () => {
+        //     clientMeta.delete(socket);
+        //     clearInterval(f);
+        // });
+
+        // socket.on("ping", () => socket.pong());
     }
 };

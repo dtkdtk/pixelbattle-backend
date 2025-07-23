@@ -1,4 +1,4 @@
-import { ApiError } from "@core/errors/base.error";
+import { ApiError } from "@core/errors/api/base.error";
 
 export class EntityInvalidError extends ApiError {
     public statusCode = 400;

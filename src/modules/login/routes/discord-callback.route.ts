@@ -2,7 +2,7 @@ import type { FastifyRequest, RouteOptions } from "fastify";
 import type { IncomingMessage, Server, ServerResponse } from "http";
 import { DiscordAuthHelper } from "../helpers/discord.helper";
 import { BaseOAuthHandler } from "./base-callback";
-import { NotVerifiedEmailError } from "@core/errors";
+import { NotVerifiedEmailError } from "@core/errors/api";
 import type { DiscordUser } from "@types";
 
 export const discordCallback: RouteOptions<

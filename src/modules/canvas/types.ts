@@ -5,4 +5,4 @@ export interface Point {
     y: number;
 }
 
-export type PixelUpdate = Omit<MongoPixel, "x" | "y">;
+export type PixelUpdate = Omit<MongoPixel, "_id">;

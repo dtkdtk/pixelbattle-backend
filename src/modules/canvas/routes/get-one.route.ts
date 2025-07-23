@@ -1,6 +1,7 @@
 import type { RouteOptions } from "fastify";
 import type { IncomingMessage, Server, ServerResponse } from "http";
-import { EntityNotFoundError } from "@core/errors";
+import { EntityNotFoundError } from "@core/errors/api";
+import { normalize } from "@utils";
 
 export const getOne: RouteOptions<
     Server,
@@ -30,14 +31,23 @@ export const getOne: RouteOptions<
     async handler(request, response) {
         const x = request.query.x;
         const y = request.query.y;
+        const point = request.server.canvas.startPoint({ x, y });
 
-        const pixel = request.server.cache.canvasService.getPixel({ x, y });
+        const pixel = request.server.canvas.getPixel(point);
 
         if (!pixel) throw new EntityNotFoundError("pixel");
 
-        return response.code(200).send({
-            ...pixel,
-            color: request.server.cache.canvasService.getColor({ x, y })
-        });
+        return response.code(200).send(
+            normalize(
+                {
+                    x,
+                    y,
+                    author: pixel.author,
+                    tag: pixel.tag,
+                    color: request.server.canvas.getColor(point)
+                },
+                ["author", "tag"]
+            )
+        );
     }
 };

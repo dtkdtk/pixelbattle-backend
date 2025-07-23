@@ -10,7 +10,7 @@ export const getTags: RouteOptions = {
         }
     },
     async handler(request, response) {
-        const pixels = request.server.cache.canvasService.pixels;
+        const pixels = request.server.canvas.pixels;
         const data = {
             used: 0,
             unused: 0,
@@ -22,7 +22,8 @@ export const getTags: RouteOptions = {
                 data.unused++;
                 continue;
             }
-            data.tags[pixel.tag] = (data.tags[pixel.tag] || 0) + 1;
+            data.tags[pixel.tag.toString()] =
+                (data.tags[pixel.tag.toString()] || 0) + 1;
             data.used++;
         }
 

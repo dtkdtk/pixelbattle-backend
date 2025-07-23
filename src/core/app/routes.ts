@@ -6,6 +6,7 @@ import { gameRoutes } from "@modules/game";
 import { loginRoutes } from "@modules/login";
 import { userRoutes } from "@modules/users";
 import { moderatorsRoutes } from "@modules/moderators";
+import { tagRoutes } from "@modules/tags";
 
 export const routes = fp(
     async function routes(app: FastifyInstance) {
@@ -13,8 +14,9 @@ export const routes = fp(
         app.register(canvasRoutes, { prefix: "/pixels" });
         app.register(gameRoutes, { prefix: "/game" });
         app.register(loginRoutes, { prefix: "/login" });
-        app.register(userRoutes, { prefix: "/users" });
         app.register(moderatorsRoutes, { prefix: "/moderators" });
+        app.register(tagRoutes, { prefix: "/tags" });
+        app.register(userRoutes, { prefix: "/users" });
     },
     {
         name: "routes",
@@ -24,7 +26,9 @@ export const routes = fp(
             "repository",
             "cache",
             "errorHandler",
-            "oauth2"
+            "oauth2",
+            "websocket",
+            "operations"
         ]
     }
 );

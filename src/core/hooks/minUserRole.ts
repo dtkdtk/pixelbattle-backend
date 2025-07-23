@@ -1,6 +1,6 @@
 import fp from "fastify-plugin";
 import type { UserRole } from "@models";
-import { NotEnoughPrivilegesError } from "@core/errors";
+import { NotEnoughPrivilegesError } from "@core/errors/api";
 
 interface UserRoleOptions {
     minRole: UserRole;

@@ -1,3 +1,5 @@
+import type { Long } from "mongodb";
+
 export type InternalUserId = string;
 
 export enum UserRole {
@@ -25,9 +27,10 @@ export type UserAuth = {
 };
 
 export interface MongoUser {
+    _id: Long;
     email: string;
     username: string;
-    tag: string | null;
+    tag: Long | null;
     userID: InternalUserId;
     role: UserRole;
     token: string;

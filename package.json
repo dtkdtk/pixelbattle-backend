@@ -9,7 +9,7 @@
     "private": true,
     "scripts": {
         "production": "bun run dist/index.js",
-        "build": "bun build src/core/index.ts --outdir ./dist --target bun",
+        "build": "bun build --target bun ./src/core/index.ts --outdir ./dist ",
         "test": "bun run src/core/index.ts"
     },
     "devDependencies": {

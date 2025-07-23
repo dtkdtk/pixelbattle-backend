@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { UserRole, type MongoUser, type UserAuthKey } from "@models";
-import { AuthLoginError, NotVerifiedEmailError } from "@core/errors";
+import { AuthLoginError, NotVerifiedEmailError } from "@core/errors/api";
 import { generator, getIpAddress, logger } from "@utils";
 import { idCookieParameters, tokenCookieParameters } from "../constants";
 import { config } from "@core/config";

@@ -1,35 +1,31 @@
 import fp from "fastify-plugin";
-import { CanvasService } from "@modules/canvas";
 import { UserService } from "@modules/users";
+import { TagService } from "@modules/tags";
 
 declare module "fastify" {
     interface FastifyInstance {
         cache: {
-            canvasService: CanvasService;
             usersService: UserService;
+            tagsService: TagService;
         };
     }
 }
 
 export const cache = fp(
     async function cache(app) {
-        const canvasService = new CanvasService(
-            app.repository.canvas,
-            app.game.width,
-            app.game.height
-        );
         const usersService = new UserService(app.repository.users);
+        const tagsService = new TagService(app.repository.tags);
 
-        await canvasService.init();
         usersService.startAutoCleanup();
+        tagsService.startAutoCleanup();
 
         app.decorate("cache", {
-            canvasService,
-            usersService
+            usersService,
+            tagsService
         });
     },
     {
         name: "cache",
-        dependencies: ["database", "repository", "game"]
+        dependencies: ["database", "repository"]
     }
 );

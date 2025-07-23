@@ -1,6 +1,7 @@
 import type { RouteOptions } from "fastify";
 import type { IncomingMessage, Server, ServerResponse } from "http";
-import { EntityInvalidError } from "@core/errors";
+import type { Long } from "mongodb";
+import { EntityInvalidError } from "@core/errors/api";
 
 export const getByTag: RouteOptions<
     Server,
@@ -28,6 +29,18 @@ export const getByTag: RouteOptions<
             },
             required: [],
             additionalProperties: false
+        },
+        params: {
+            type: "object",
+            required: ["tag"],
+            properties: {
+                id: {
+                    type: "string",
+                    minLength: 2,
+                    maxLength: 12,
+                    pattern: "^[a-zA-Z0-9_-]+$"
+                }
+            }
         }
     },
     config: {
@@ -39,29 +52,36 @@ export const getByTag: RouteOptions<
     async handler(request, response) {
         const { tag } = request.params;
 
-        if (tag === "" || tag.length > 8) throw new EntityInvalidError("tag");
+        if (tag === "" || tag.length > 12) throw new EntityInvalidError("tag");
 
         const { limit, page } = request.query;
 
-        const available = await request.server.database.users.countDocuments(
-            {
-                tag: request.params.tag
-            },
-            { hint: { tag: 1 } }
-        );
-        const list = await request.server.database.users
-            .find(
+        const data = await request.server.cache.tagsService.get({ name: tag });
+
+        let available = 0;
+        let list: { _id: Long }[] = [];
+
+        if (data) {
+            available = await request.server.database.users.countDocuments(
                 {
-                    tag: request.params.tag
+                    tag: data._id
                 },
-                { hint: { tag: 1 }, projection: { userID: 1 } }
-            )
-            .skip((page - 1) * limit)
-            .limit(limit)
-            .toArray();
+                { hint: { tag: 1 } }
+            );
+            list = await request.server.database.users
+                .find(
+                    {
+                        tag: data._id
+                    },
+                    { hint: { tag: 1 }, projection: { _id: 1 } }
+                )
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .toArray();
+        }
 
         return response.code(200).send({
-            users: list.map((u) => u.userID),
+            users: list.map((u) => u._id.toString()),
             pagination: {
                 current: page,
                 available: Math.ceil(available / limit)

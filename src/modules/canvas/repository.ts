@@ -3,39 +3,32 @@ import type { MongoPixel } from "@models";
 
 export class CanvasRepository extends BaseRepository<MongoPixel> {
     async fetch() {
-        const indexes = await this.collection.indexes();
-
-        if (!indexes.some((i) => i.key?.x === 1 && i.key?.y === 1)) {
-            await this.collection.createIndex({ x: 1, y: 1 });
-        }
-
-        return this.collection
-            .find({}, { projection: { _id: 0 } })
-            .sort({ y: 1, x: 1 })
-            .toArray();
+        return this.collection.find({}).sort({ _id: 1 }).toArray();
     }
 
     async bulkUpdate(updates: MongoPixel[]) {
         if (!updates.length) return;
 
         await this.collection.bulkWrite(
-            updates.map((update) => ({
-                updateOne: {
-                    filter: { x: update.x, y: update.y },
-                    update: { $set: update }
-                }
-            })),
-            { writeConcern: { w: "majority" } }
+            updates.map((update) => {
+                const { _id, ...$set } = update;
+
+                return {
+                    updateOne: {
+                        filter: { _id },
+                        update: { $set }
+                    }
+                };
+            }),
+            { retryWrites: true, writeConcern: { w: "majority" } }
         );
     }
 
-    async clear(width: number, height: number, color: string) {
+    async clear(width: number, height: number, color: number) {
         await this.collection.drop();
-        await this.collection.createIndex({ x: 1, y: 1 });
 
-        const pixels = Array.from({ length: width * height }, (_, i) => ({
-            x: i % width,
-            y: Math.floor(i / width),
+        const pixels = Array.from({ length: width * height }, (_, _id) => ({
+            _id,
             author: null,
             tag: null,
             color

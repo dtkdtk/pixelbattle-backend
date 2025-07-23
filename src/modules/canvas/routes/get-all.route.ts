@@ -7,7 +7,7 @@ export const getAll: RouteOptions = {
     config: {
         rateLimit: {
             max: 3,
-            timeWindow: 2000
+            timeWindow: 3000
         }
     },
     handler: async function handler(request, response) {
@@ -15,7 +15,7 @@ export const getAll: RouteOptions = {
             width: request.server.game.width,
             height: request.server.game.height,
             channels: 3,
-            data: request.server.cache.canvasService.colors
+            data: request.server.canvas.colors
         });
 
         return response

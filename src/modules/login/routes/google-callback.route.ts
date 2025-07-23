@@ -1,7 +1,7 @@
 import type { FastifyRequest, RouteOptions } from "fastify";
 import type { IncomingMessage, Server, ServerResponse } from "http";
 import { GoogleAuthHelper } from "../helpers/google.helper";
-import { NotVerifiedEmailError } from "@core/errors";
+import { NotVerifiedEmailError } from "@core/errors/api";
 import { BaseOAuthHandler } from "./base-callback";
 import { type MongoUser } from "@models";
 import type { GoogleUser } from "@types";

@@ -1,7 +1,8 @@
+import type { Long } from "mongodb";
+
 export interface MongoPixel {
-    x: number;
-    y: number;
-    author: string | null;
-    tag: string | null;
-    color: string;
+    _id: number;
+    author: Long | null;
+    tag: Long | null;
+    color: number;
 }

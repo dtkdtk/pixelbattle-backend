@@ -5,7 +5,7 @@ import {
     NotFoundError,
     ValidationError,
     type ApiErrorResponse
-} from "@core/errors";
+} from "@core/errors/api";
 
 export const errorHandler = fp(
     async function errorHandler(app: FastifyInstance) {

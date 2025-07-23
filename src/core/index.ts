@@ -1,13 +1,15 @@
 import fastify from "fastify";
 import { konsole } from "utils";
-import { plugins, routes } from "@core/app";
+import { operations, plugins, routes } from "@core/app";
 import {
     database,
     repository,
     game,
     cache,
+    canvas,
     errorHandler,
-    oauth2
+    oauth2,
+    websocket
 } from "@core/extensions";
 
 import "./hello";
@@ -24,8 +26,11 @@ const app = fastify({
         repository,
         game,
         cache,
+        canvas,
         errorHandler,
         oauth2,
+        websocket,
+        operations,
         routes
     ]) {
         konsole.write(`Loading "${decorator.name}" plugin...`);

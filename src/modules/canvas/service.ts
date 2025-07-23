@@ -4,9 +4,10 @@ import type { MongoPixel } from "@models";
 import { translate } from "@utils";
 
 export class CanvasService {
-    private changes: Point[] = [];
+    private changes: number[] = [];
     public pixels: Omit<MongoPixel, "color">[];
     public colors: Uint8ClampedArray;
+    public syncInterval?: Timer;
 
     constructor(
         private repository: CanvasRepository,
@@ -28,7 +29,7 @@ export class CanvasService {
         }
 
         pixels.forEach(({ color, ...pixel }, index) => {
-            const [R, G, B] = translate.hexadecimal(color);
+            const [R, G, B] = translate.number(color);
             const from = index * this.bitPP;
 
             this.colors[from] = R;
@@ -41,61 +42,62 @@ export class CanvasService {
     }
 
     public async sync() {
-        const updates = this.changes.map((point) => ({
-            ...point,
-            ...this.getPixelUpdate(point)
+        const updates = this.changes.map((pixel) => ({
+            _id: pixel,
+            ...this.getPixelUpdate(pixel)
         }));
 
         await this.repository.bulkUpdate(updates);
         this.changes = [];
     }
 
-    private getPixelUpdate({ x, y }: Point): PixelUpdate {
-        const pixel = this.pixels.find(
-            (pixel) => pixel.x === x && pixel.y === y
-        )!;
+    private getPixelUpdate(point: number): PixelUpdate {
+        const pixel = this.pixels.find((data) => data._id === point)!;
 
         return {
             author: pixel.author,
             tag: pixel.tag,
-            color: this.getColor({ x, y })
+            color: this.getColor(point)
         };
     }
 
     public setPixel(pixel: MongoPixel) {
-        const point: Point = { x: pixel.x, y: pixel.y };
-        const data = this.getPixel(point);
+        const data = this.getPixel(pixel._id);
 
         if (!data) return;
 
-        this.setColor(point, pixel.color);
+        this.setColor(pixel._id, pixel.color);
         data.author = pixel.author;
         data.tag = pixel.tag;
 
-        this.changes.push(point);
+        this.changes.push(pixel._id);
 
         return pixel;
     }
 
-    public getPixel({ x, y }: Point) {
-        return this.pixels.find((pixel) => pixel.x === x && pixel.y === y);
+    public getPixel(point: number) {
+        return this.pixels.find((pixel) => pixel._id === point);
     }
 
-    public setColor(point: Point, color: string) {
+    public setColor(point: number, color: number) {
         const index = this.startIndex(point);
-        const [R, G, B] = translate.hexadecimal(color);
+        const [R, G, B] = translate.number(color);
 
         this.colors[index] = R;
         this.colors[index + 1] = G;
         this.colors[index + 2] = B;
     }
 
-    public getColor({ x, y }: Point) {
-        const index = this.startIndex({ x, y });
+    public getColor(point: number) {
+        const index = this.startIndex(point);
         return translate.RGB(this.colors.slice(index, index + this.bitPP));
     }
 
-    private startIndex({ x, y }: Point) {
-        return (x + y * this.width) * this.bitPP;
+    public startPoint({ x, y }: Point) {
+        return x + y * this.width;
+    }
+
+    private startIndex(point: number) {
+        return point * this.bitPP;
     }
 }

@@ -1,4 +1,5 @@
 import { BaseRepository } from "@core/database";
+import type { UpdateOptions } from "mongodb";
 import type { MongoUser } from "@models";
 import type { UserFilter } from "./types";
 
@@ -7,28 +8,29 @@ export class UserRepository extends BaseRepository<MongoUser> {
         const keys = Object.keys(filter);
 
         return this.collection.findOne(filter, {
-            hint: this.getIndexHint(keys),
-            projection: { _id: 0 }
+            hint: this.getIndexHint(keys)
         });
     }
 
     async updateOne(
         filter: UserFilter,
-        update: Omit<Partial<MongoUser>, "id">,
-        options?: { upsert?: boolean }
+        update: Partial<MongoUser>,
+        options?: Omit<UpdateOptions, "hint">
     ) {
         const keys = Object.keys(filter);
 
         return this.collection.updateOne(
             filter,
             { $set: update },
-            { hint: this.getIndexHint(keys), upsert: options?.upsert }
+            { ...options, hint: this.getIndexHint(keys) }
         );
     }
 
     private getIndexHint(keys: string[]) {
-        if (keys.includes("userID")) return { userID: 1 };
-        if (keys.includes("token")) return { token: 1 };
-        return { _id: 1 };
+        const order = ["_id", "token"];
+        const default_index = { _id: 1 };
+
+        const found = order.find((field) => keys.includes(field));
+        return found ? { [found]: 1 } : default_index;
     }
 }

@@ -15,6 +15,7 @@ export function createDatabaseCollections(database: Db) {
         "games",
         "pixels",
         "users",
+        "tags",
         "banned_ips"
     ];
 

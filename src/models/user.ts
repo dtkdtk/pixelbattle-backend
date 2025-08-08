@@ -1,17 +1,10 @@
 import type { Long } from "mongodb";
 
-export type InternalUserId = string;
-
 export enum UserRole {
     User = 0,
-    Moderator = 1,
-    Admin = 2
-}
-
-export interface BanInfo {
-    moderatorID: InternalUserId;
-    timeout: number;
-    reason: string | null;
+    Academy = 1,
+    Moderator = 2,
+    Admin = 3
 }
 
 export interface AuthInfo {
@@ -31,11 +24,10 @@ export interface MongoUser {
     email: string;
     username: string;
     tag: Long | null;
-    userID: InternalUserId;
     role: UserRole;
     token: string;
     badges: number;
     karma: number;
-    banned: BanInfo | null;
+    banned: Long | null;
     connections: UserAuth;
 }

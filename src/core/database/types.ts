@@ -1,5 +1,6 @@
 import type { Collection } from "mongodb";
 import type {
+    MongoBan,
     MongoGame,
     MongoPixel,
     MongoUser,
@@ -8,6 +9,7 @@ import type {
 } from "@models";
 
 export interface PixelDatabase {
+    bans: MongoBan;
     games: MongoGame;
     pixels: MongoPixel;
     users: MongoUser;

@@ -12,6 +12,7 @@ declare module "mongodb" {
 
 export function createDatabaseCollections(database: Db) {
     const keys: (keyof PixelDatabase)[] = [
+        "bans",
         "games",
         "pixels",
         "users",

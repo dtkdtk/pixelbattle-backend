@@ -1,7 +1,8 @@
 import fp from "fastify-plugin";
 import type { FastifyInstance } from "fastify";
 import type { OperationOptions } from "./types";
-import { place } from "@modules/canvas";
+import { pixel } from "@modules/canvas";
+import { ping } from "@modules/_root";
 
 declare module "fastify" {
     interface FastifyInstance {
@@ -11,7 +12,7 @@ declare module "fastify" {
 
 export const operations = fp(
     async function routes(app: FastifyInstance) {
-        app.decorate("operations", [place]);
+        app.decorate("operations", [pixel, ping]);
     },
     {
         name: "operations",

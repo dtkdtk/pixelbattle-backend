@@ -1,21 +1,16 @@
 import type { RouteOptions } from "fastify";
 import type * as WebSocket from "ws";
 import type { IncomingMessage, Server, ServerResponse } from "http";
-import { SocketMessage } from "@proto";
-import { EntityNotFoundError, NotAuthorizedError } from "@core/errors/api";
+import { Envelope } from "@proto";
 import { UserRole } from "@models";
-import { translate } from "@utils";
+import { TemporaryId } from "@utils";
+import { WebSocketError } from "@core/errors";
 
-const clientMeta = new WeakMap<
-    WebSocket.WebSocket,
-    {
-        lastPing: number;
-        rtt: number;
-        pingSamples: number[];
-        offset: number;
-        offsetSamples: number[];
+declare module "fastify" {
+    interface FastifyRequest {
+        temporaryid: TemporaryId;
     }
->();
+}
 
 export const socket: RouteOptions<
     Server,
@@ -45,9 +40,48 @@ export const socket: RouteOptions<
         return response.send();
     },
     wsHandler(socket, request) {
-        socket.send(request.query.z);
+        request.temporaryid = new TemporaryId();
+
+        socket.binaryType = "arraybuffer";
+        //socket.send(request.query.z);
         socket.on("message", (data, isBinary) => {
-            const json = JSON.parse(data.toString("utf-8"));
+            if (!isBinary) return console.log("NO BINARY");
+            const message = Envelope.decode(
+                new Uint8Array(data as ArrayBuffer)
+            );
+            const name = message.payload;
+
+            if (!name) return console.log("NO OPERATION");
+
+            const operation = request.server.operations.find(
+                (op) => op.payload === name
+            );
+
+            if (!operation) return console.log("NO OPERATION FOUND");
+
+            operation.handler(message, socket, request).catch((err) => {
+                if (!(err instanceof WebSocketError)) return console.error(err);
+                if (socket.readyState !== socket.OPEN) return;
+
+                const payload: any = {
+                    code: err.statusCode
+                };
+
+                if (err.data?.until) {
+                    payload.cooldown = { until: err.data.until };
+                }
+
+                const errorMessage = Envelope.encode({
+                    id: request.temporaryid.nextId,
+                    timestamp: Date.now(),
+                    correlationId: message.id,
+                    error: payload
+                }).finish();
+
+                socket.send(errorMessage);
+            });
+
+            /*const json = JSON.parse(data.toString("utf-8"));
             const operation = request.server.operations.find(
                 (op) => op.payload === json.payload
             );
@@ -56,7 +90,7 @@ export const socket: RouteOptions<
 
             operation
                 .handler(json, socket, request)
-                .catch((err) => console.error(err));
+                .catch((err) => console.error(err));*/
         });
 
         // const f = setInterval(() => {

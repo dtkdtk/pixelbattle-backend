@@ -43,12 +43,11 @@ export const socket: RouteOptions<
 
         socket.binaryType = "arraybuffer";
 
-        socket.on("message", (data, isBinary) => {
+        socket.on("message", (data: Uint8Array, isBinary) => {
             try {
                 if (!isBinary) return socket.close(1003);
-                if (!(data instanceof Uint8Array)) return socket.close(1003);
-                if (data.byteLength > 1024) return socket.close(1003);
-                if (data.byteLength < 10) return socket.close(1003);
+                if (data.byteLength > 1024) return socket.close(1009);
+                if (data.byteLength < 10) return socket.close(1007);
 
                 const message = Envelope.decode(data);
                 const operation = request.server.operations.find(
@@ -56,6 +55,7 @@ export const socket: RouteOptions<
                 );
 
                 if (!message.payload) return socket.close(1003);
+                if (!message.timestamp) return socket.close(1003);
                 if (!operation) return socket.close(1003);
 
                 operation.handler(message, socket, request).catch((err) => {
@@ -86,7 +86,7 @@ export const socket: RouteOptions<
                     socket.send(errorMessage);
                 });
             } catch (err) {
-                return socket.close(1003);
+                return socket.close(1007);
             }
 
             /*const json = JSON.parse(data.toString("utf-8"));

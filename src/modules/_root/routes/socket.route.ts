@@ -2,7 +2,6 @@ import type { RouteOptions } from "fastify";
 import type * as WebSocket from "ws";
 import type { IncomingMessage, Server, ServerResponse } from "http";
 import { Envelope } from "@proto";
-import { UserRole } from "@models";
 import { TemporaryId } from "@utils";
 import { WebSocketError } from "@core/errors";
 
@@ -43,43 +42,52 @@ export const socket: RouteOptions<
         request.temporaryid = new TemporaryId();
 
         socket.binaryType = "arraybuffer";
-        //socket.send(request.query.z);
+
         socket.on("message", (data, isBinary) => {
-            if (!isBinary) return console.log("NO BINARY");
-            const message = Envelope.decode(
-                new Uint8Array(data as ArrayBuffer)
-            );
-            const name = message.payload;
+            try {
+                if (!isBinary) return socket.close(1003);
+                if (!(data instanceof Uint8Array)) return socket.close(1003);
+                if (data.byteLength > 1024) return socket.close(1003);
+                if (data.byteLength < 10) return socket.close(1003);
 
-            if (!name) return console.log("NO OPERATION");
+                const message = Envelope.decode(data);
+                const operation = request.server.operations.find(
+                    (op) => op.payload === message.payload
+                );
 
-            const operation = request.server.operations.find(
-                (op) => op.payload === name
-            );
+                if (!message.payload) return socket.close(1003);
+                if (!operation) return socket.close(1003);
 
-            if (!operation) return console.log("NO OPERATION FOUND");
+                operation.handler(message, socket, request).catch((err) => {
+                    if (!(err instanceof WebSocketError))
+                        return console.error(err);
+                    if (socket.readyState !== socket.OPEN) return;
 
-            operation.handler(message, socket, request).catch((err) => {
-                if (!(err instanceof WebSocketError)) return console.error(err);
-                if (socket.readyState !== socket.OPEN) return;
+                    console.log(err.data);
+                    const payload: any = {
+                        code: err.statusCode
+                    };
 
-                const payload: any = {
-                    code: err.statusCode
-                };
+                    if (err.data?.until) {
+                        payload.cooldown = { until: err.data.until };
+                    }
 
-                if (err.data?.until) {
-                    payload.cooldown = { until: err.data.until };
-                }
+                    if (err.data?.max) {
+                        payload.bounds = { max: err.data.max };
+                    }
 
-                const errorMessage = Envelope.encode({
-                    id: request.temporaryid.nextId,
-                    timestamp: Date.now(),
-                    correlationId: message.id,
-                    error: payload
-                }).finish();
+                    const errorMessage = Envelope.encode({
+                        id: request.temporaryid.nextId,
+                        timestamp: Date.now(),
+                        correlationId: message.id,
+                        error: payload
+                    }).finish();
 
-                socket.send(errorMessage);
-            });
+                    socket.send(errorMessage);
+                });
+            } catch (err) {
+                return socket.close(1003);
+            }
 
             /*const json = JSON.parse(data.toString("utf-8"));
             const operation = request.server.operations.find(

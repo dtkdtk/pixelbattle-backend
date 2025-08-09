@@ -32,22 +32,36 @@ export const getOne: RouteOptions<
         const x = request.query.x;
         const y = request.query.y;
         const point = request.server.canvas.startPoint({ x, y });
-
         const pixel = request.server.canvas.getPixel(point);
 
         if (!pixel) throw new EntityNotFoundError("pixel");
 
-        return response.code(200).send(
-            normalize(
-                {
-                    x,
-                    y,
-                    author: pixel.author,
-                    tag: pixel.tag,
-                    color: request.server.canvas.getColor(point)
-                },
-                ["author", "tag"]
-            )
-        );
+        const author =
+            pixel.author &&
+            (await request.server.cache.usersService.get({
+                _id: pixel.author
+            }));
+        const tag =
+            pixel.tag &&
+            (await request.server.cache.tagsService.get({
+                _id: pixel.tag
+            }));
+
+        return response.code(200).send({
+            x,
+            y,
+            author:
+                author &&
+                normalize(
+                    {
+                        _id: author._id,
+                        username: author.username,
+                        role: author.role
+                    },
+                    ["_id"]
+                ),
+            tag: tag && normalize(tag, ["_id"]),
+            color: request.server.canvas.getColor(point)
+        });
     }
 };

@@ -1,5 +1,5 @@
+import sharp from "sharp";
 import type { RouteOptions } from "fastify";
-import { encode } from "fast-png";
 
 export const getAll: RouteOptions = {
     method: "GET",
@@ -11,16 +11,25 @@ export const getAll: RouteOptions = {
         }
     },
     handler: async function handler(request, response) {
-        const image = encode({
-            width: request.server.game.width,
-            height: request.server.game.height,
-            channels: 3,
-            data: request.server.canvas.colors
-        });
+        const canvas = await sharp(request.server.canvas.colors, {
+            raw: {
+                width: request.server.canvas.width,
+                height: request.server.canvas.height,
+                channels: 3
+            }
+        })
+            .withExif({
+                IFD0: {
+                    Copyright: "Pixelate It!",
+                    Software: "Bun + Sharp"
+                }
+            })
+            .toFormat("png", { compressionLevel: 9, adaptiveFiltering: false })
+            .toBuffer();
 
         return response
             .header("Content-Type", "image/png")
             .code(200)
-            .send(image);
+            .send(canvas);
     }
 };

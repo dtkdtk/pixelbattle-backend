@@ -5,6 +5,7 @@ import { UserNotFoundError, UserCooldownError } from "@core/errors/websocket";
 import { UserRole } from "@models";
 import { Envelope } from "@proto";
 import { Cooldown } from "utils";
+import { PixelOutOfBoundsError } from "@core/errors/websocket/pixel";
 
 const cooldown = new Cooldown<Long>(60000);
 
@@ -18,12 +19,14 @@ export const pixel: OperationOptions = {
         const { id, color } = data.pixel!;
 
         /*if (typeof id !== "number" || typeof color !== "number")
-            return console.log("Invalid pixel data");
+            return console.log("Invalid pixel data");*/
         if (
             id < 0 ||
             id >= request.server.canvas.width * request.server.canvas.height
         )
-            return console.log("Pixel ID out of bounds");*/
+            throw new PixelOutOfBoundsError(
+                request.server.canvas.width * request.server.canvas.height - 1
+            );
 
         const pixel = request.server.canvas.getPixel(id);
 
@@ -36,7 +39,7 @@ export const pixel: OperationOptions = {
 
         request.server.canvas.setPixel({
             _id: id,
-            color: color,
+            color,
             tag,
             author: request.user._id
         });
@@ -45,9 +48,7 @@ export const pixel: OperationOptions = {
             if (client.readyState !== client.OPEN) continue;
 
             const message = Envelope.encode({
-                id: request.temporaryid.nextId,
                 timestamp: Date.now(),
-                correlationId: data.id,
                 pixel: {
                     id,
                     color

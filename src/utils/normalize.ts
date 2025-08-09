@@ -15,11 +15,15 @@ export function normalize<
         if (
             typeof value === "object" &&
             value !== null &&
-            "toString" in value
+            "toString" in value &&
+            typeof value.toString === "function" &&
+            value.toString !== Object.prototype.toString
         ) {
             result[key] = value.toString();
         } else if (typeof value === "number" || typeof value === "bigint") {
             result[key] = value.toString();
+        } else if (typeof value === "object" && value !== null) {
+            result[key] = value;
         }
     }
 

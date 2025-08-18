@@ -1,5 +1,7 @@
+import { Long } from "mongodb";
+
 type NormalizeKeys<T, K extends keyof T> = Omit<T, K> & {
-    [P in K]: string;
+    [P in K as P extends "_id" ? "id" : P]: string;
 };
 
 export function normalize<
@@ -8,24 +10,32 @@ export function normalize<
 >(response: T | null, keys: K[] = ["_id"] as K[]): NormalizeKeys<T, K> | null {
     if (!response) return null;
 
-    const result: any = { ...response };
+    let result: any = { ...response };
 
     for (const key of keys) {
-        const value = result[key];
-        if (
-            typeof value === "object" &&
-            value !== null &&
-            "toString" in value &&
-            typeof value.toString === "function" &&
-            value.toString !== Object.prototype.toString
-        ) {
-            result[key] = value.toString();
-        } else if (typeof value === "number" || typeof value === "bigint") {
-            result[key] = value.toString();
-        } else if (typeof value === "object" && value !== null) {
-            result[key] = value;
+        if (key in result) {
+            const value = result[key];
+
+            if (value instanceof Long || value?.constructor?.name === "Long") {
+                result[key] = value.toString();
+            } else if (typeof value === "bigint") {
+                result[key] = value.toString();
+            } else if (
+                typeof value === "object" &&
+                value !== null &&
+                "toString" in value
+            ) {
+                result[key] = value.toString();
+            } else if (typeof value === "number" || typeof value === "bigint") {
+                result[key] = value.toString();
+            }
+
+            if (key === "_id") {
+                const { _id, ...rest } = result;
+                result = { id: _id, ...rest };
+            }
         }
     }
 
-    return result;
+    return result as NormalizeKeys<T, K>;
 }

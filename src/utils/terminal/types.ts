@@ -1,7 +1,7 @@
 import type { UserAuthKey } from "@models";
 
 export interface PixelInfo {
-    userID: string;
+    _id: string;
     nickname: string;
     x: number;
     y: number;
@@ -11,7 +11,7 @@ export interface PixelInfo {
 }
 
 export interface LoginInfo {
-    userID: string;
+    _id: string;
     nickname: string;
     method: UserAuthKey;
     ip: string;

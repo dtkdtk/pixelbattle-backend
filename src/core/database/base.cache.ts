@@ -1,25 +1,27 @@
-export class BaseCache<T extends {}> {
-    private _expiresOn: number = 0;
+export class CacheManager<T> {
+    private readonly store = new Map<string, { value: T; expires: number }>();
 
-    constructor(
-        public data: T,
-        private ttl: number
-    ) {
-        this.refresh();
+    set(key: string, value: T, ttl: number) {
+        this.store.set(key, { value, expires: Date.now() + ttl });
     }
 
-    public get expiresOn() {
-        return this._expiresOn;
+    get(key: string) {
+        const data = this.store.get(key);
+        if (!data) return null;
+
+        if (Date.now() > data.expires) {
+            this.store.delete(key);
+            return null;
+        }
+
+        return data.value as T;
     }
 
-    public set<P extends keyof T>(prop: P, val: T[P]): T[P] {
-        this.data[prop] = val;
-        this.refresh();
-
-        return val;
+    del(key: string) {
+        this.store.delete(key);
     }
 
-    public refresh() {
-        this._expiresOn = Date.now() + this.ttl;
+    clear() {
+        this.store.clear();
     }
 }

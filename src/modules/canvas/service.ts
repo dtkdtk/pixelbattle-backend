@@ -4,8 +4,8 @@ import type { MongoPixel } from "@models";
 import { translate } from "@utils";
 
 export class CanvasService {
-    private changes: number[] = [];
-    public pixels: Omit<MongoPixel, "color">[];
+    private changes: Set<number> = new Set();
+    public pixels: Map<number, Omit<MongoPixel, "color">>;
     public colors: Uint8ClampedArray;
     public syncInterval?: Timer;
 
@@ -16,7 +16,7 @@ export class CanvasService {
         public readonly bitPP = 3
     ) {
         this.colors = new Uint8ClampedArray(width * height * bitPP);
-        this.pixels = [];
+        this.pixels = new Map();
     }
 
     public async init() {
@@ -24,7 +24,7 @@ export class CanvasService {
 
         if (pixels.length !== this.width * this.height) {
             throw new Error(
-                `Canvas size mismatch. Expected ${this.width * this.height} pixels, got ${this.pixels.length}`
+                `Canvas size mismatch. Expected ${this.width * this.height} pixels, got ${this.pixels.size}`
             );
         }
 
@@ -35,24 +35,33 @@ export class CanvasService {
             this.colors[from] = R;
             this.colors[from + 1] = G;
             this.colors[from + 2] = B;
-            this.pixels[index] = pixel;
+            this.pixels.set(index, pixel);
         });
 
         return this.pixels;
     }
 
     public async sync() {
-        const updates = this.changes.map((pixel) => ({
-            _id: pixel,
-            ...this.getPixelUpdate(pixel)
-        }));
+        if (!this.changes.size) return;
 
-        await this.repository.bulkUpdate(updates);
-        this.changes = [];
+        const updates = [];
+
+        for (const pixelId of this.changes) {
+            updates.push({
+                _id: pixelId,
+                ...this.getPixelUpdate(pixelId)
+            });
+        }
+
+        if (updates.length > 0) {
+            await this.repository.bulkUpdate(updates);
+        }
+
+        this.changes.clear();
     }
 
     private getPixelUpdate(point: number): PixelUpdate {
-        const pixel = this.pixels.find((data) => data._id === point)!;
+        const pixel = this.getPixel(point)!;
 
         return {
             author: pixel.author,
@@ -62,21 +71,15 @@ export class CanvasService {
     }
 
     public setPixel(pixel: MongoPixel) {
-        const data = this.getPixel(pixel._id);
+        const { color, ...data } = pixel;
 
-        if (!data) return;
-
-        this.setColor(pixel._id, pixel.color);
-        data.author = pixel.author;
-        data.tag = pixel.tag;
-
-        this.changes.push(pixel._id);
-
-        return pixel;
+        this.setColor(data._id, color);
+        this.pixels.set(pixel._id, data);
+        this.changes.add(pixel._id);
     }
 
     public getPixel(point: number) {
-        return this.pixels.find((pixel) => pixel._id === point);
+        return this.pixels.get(point);
     }
 
     public setColor(point: number, color: number) {

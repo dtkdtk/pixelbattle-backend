@@ -51,7 +51,7 @@ export const googleCallback: RouteOptions<
         };
 
         protected getUpdateData(
-            existingUser: Omit<MongoUser, "_id"> | null,
+            existingUser: MongoUser | null,
             data: {
                 id: string;
                 email: string;

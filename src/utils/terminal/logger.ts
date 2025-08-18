@@ -1,7 +1,7 @@
 import type { PixelInfo, LoginInfo } from "./types";
 
 export const pixelPlace = ({
-    userID,
+    _id,
     nickname,
     color,
     x,
@@ -10,16 +10,16 @@ export const pixelPlace = ({
     ip
 }: PixelInfo) =>
     console.log(
-        `* [PIXEL] ${userID} - ${nickname}; ` +
+        `* [PIXEL] ${_id} - ${nickname}; ` +
             `Coordinates: X${x} Y${y}; ` +
             `Color: ${color}; ` +
             `Tag: ${tag}; ` +
             `IP: ${ip}; `
     );
 
-export const loginComplete = ({ userID, nickname, method, ip }: LoginInfo) =>
+export const loginComplete = ({ _id, nickname, method, ip }: LoginInfo) =>
     console.log(
-        `* [LOGIN] ${userID} - ${nickname}; ` +
+        `* [LOGIN] ${_id} - ${nickname}; ` +
             `Method: ${method}; ` +
             `IP: ${ip};`
     );

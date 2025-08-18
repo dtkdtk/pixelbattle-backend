@@ -17,13 +17,12 @@ export const getTags: RouteOptions = {
             tags: {} as Record<string, number>
         };
 
-        for (const pixel of pixels) {
-            if (pixel.tag === null) {
+        for (const [_id, { tag }] of pixels) {
+            if (tag === null) {
                 data.unused++;
                 continue;
             }
-            data.tags[pixel.tag.toString()] =
-                (data.tags[pixel.tag.toString()] || 0) + 1;
+            data.tags[tag.toString()] = (data.tags[tag.toString()] || 0) + 1;
             data.used++;
         }
 

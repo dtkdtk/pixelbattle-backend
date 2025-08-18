@@ -1,7 +1,6 @@
 import type { RouteOptions } from "fastify";
 import type { IncomingMessage, Server, ServerResponse } from "http";
 import type { Long } from "mongodb";
-import { EntityInvalidError } from "@core/errors/api";
 
 export const getByTag: RouteOptions<
     Server,
@@ -34,7 +33,7 @@ export const getByTag: RouteOptions<
             type: "object",
             required: ["tag"],
             properties: {
-                id: {
+                tag: {
                     type: "string",
                     minLength: 2,
                     maxLength: 12,
@@ -51,33 +50,28 @@ export const getByTag: RouteOptions<
     },
     async handler(request, response) {
         const { tag } = request.params;
-
-        if (tag === "" || tag.length > 12) throw new EntityInvalidError("tag");
-
         const { limit, page } = request.query;
 
-        const data = await request.server.cache.tagsService.get({ name: tag });
+        const data = await request.server.repository.tags.findByName(tag);
 
         let available = 0;
         let list: { _id: Long }[] = [];
 
         if (data) {
-            available = await request.server.database.users.countDocuments(
-                {
-                    tag: data._id
-                },
-                { hint: { tag: 1 } }
-            );
-            list = await request.server.database.users
-                .find(
+            available = await request.server.repository.users.countDocuments({
+                tag: data._id
+            });
+
+            list = await request.server.repository.users
+                .findAll(
                     {
                         tag: data._id
                     },
-                    { hint: { tag: 1 }, projection: { _id: 1 } }
+                    { _id: 1 }
                 )
                 .skip((page - 1) * limit)
                 .limit(limit)
-                .toArray();
+                .lean();
         }
 
         return response.code(200).send({

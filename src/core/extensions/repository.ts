@@ -18,10 +18,10 @@ declare module "fastify" {
 export const repository = fp(
     async (app) => {
         app.decorate("repository", {
-            canvas: new CanvasRepository(app.database.pixels),
-            users: new UserRepository(app.database.users),
-            tags: new TagRepository(app.database.tags),
-            bans: new BanRepository(app.database.bans)
+            canvas: new CanvasRepository(app.models.Pixel),
+            users: new UserRepository(app.models.User),
+            tags: new TagRepository(app.models.Tag),
+            bans: new BanRepository(app.models.Ban)
         });
     },
     { name: "repository", dependencies: ["database"] }

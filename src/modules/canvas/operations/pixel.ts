@@ -1,6 +1,6 @@
 import type { Long } from "mongodb";
 import type { OperationOptions } from "@core/app";
-import { EntityNotFoundError, NotAuthorizedError } from "@core/errors/api";
+import { EntityNotFoundError } from "@core/errors/api";
 import { UserNotFoundError, UserCooldownError } from "@core/errors/websocket";
 import { UserRole } from "@models";
 import { Envelope } from "@proto";
@@ -18,8 +18,8 @@ export const pixel: OperationOptions = {
 
         const { id, color } = data.pixel!;
 
-        /*if (typeof id !== "number" || typeof color !== "number")
-            return console.log("Invalid pixel data");*/
+        if (typeof id !== "number" || typeof color !== "number")
+            return console.error("Invalid pixel data");
         if (
             id < 0 ||
             id >= request.server.canvas.width * request.server.canvas.height

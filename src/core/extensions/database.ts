@@ -1,34 +1,46 @@
 import fp from "fastify-plugin";
 import type { FastifyInstance } from "fastify";
-import fastifyMongodb from "@fastify/mongodb";
-import {
-    createDatabaseCollections,
-    type PixelDatabaseCollections
-} from "@core/database";
+import mongoose from "mongoose";
+import { Ban, Game, Tag, Pixel, User } from "@models";
 import { config } from "../config";
 
 declare module "fastify" {
     interface FastifyInstance {
-        database: PixelDatabaseCollections;
+        mongo: mongoose.Connection;
+        models: {
+            Ban: typeof Ban;
+            Game: typeof Game;
+            Tag: typeof Tag;
+            Pixel: typeof Pixel;
+            User: typeof User;
+        };
     }
 }
 
 export const database = fp(
     async function database(app: FastifyInstance) {
-        await app.register(fastifyMongodb, {
+        await mongoose.connect(config.database, {
             retryWrites: true,
             readPreference: "primaryPreferred",
             compressors: ["zlib"],
             zlibCompressionLevel: 4,
-            forceClose: true,
-            url: config.database
+            minPoolSize: 5,
+            maxPoolSize: 10,
+            writeConcern: { w: "majority" }
         });
 
-        if (!app.mongo.db) {
+        if (!mongoose.connection.db) {
             throw new Error("Can't connect to the database");
         }
 
-        app.decorate("database", createDatabaseCollections(app.mongo.db));
+        app.decorate("mongo", mongoose.connection);
+        app.decorate("models", {
+            Ban,
+            Game,
+            Tag,
+            Pixel,
+            User
+        });
     },
     { name: "database", dependencies: [] }
 );

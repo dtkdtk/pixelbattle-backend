@@ -33,8 +33,8 @@ export const getById: RouteOptions<
         }
     },
     async handler(request, response) {
-        const _id = Long.fromString(request.params.id);
-        const tag = await request.server.cache.tagsService.get({ _id });
+        const id = Long.fromString(request.params.id);
+        const tag = await request.server.repository.tags.findById(id);
 
         if (!tag) {
             throw new EntityNotFoundError("tag");

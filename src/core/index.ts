@@ -5,7 +5,6 @@ import {
     database,
     repository,
     game,
-    cache,
     canvas,
     errorHandler,
     oauth2,
@@ -16,7 +15,7 @@ import "./hello";
 
 const app = fastify({
     logger: process.env.NODE_ENV === "development",
-    pluginTimeout: 180000
+    pluginTimeout: 120000
 });
 
 (async () => {
@@ -25,7 +24,6 @@ const app = fastify({
         database,
         repository,
         game,
-        cache,
         canvas,
         errorHandler,
         oauth2,

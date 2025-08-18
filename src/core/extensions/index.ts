@@ -1,4 +1,3 @@
-export * from "./cache";
 export * from "./canvas";
 export * from "./database";
 export * from "./errorHandler";

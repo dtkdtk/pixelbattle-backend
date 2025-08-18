@@ -1,15 +1,18 @@
 import { BaseRepository } from "@core/database";
+import type { Model } from "mongoose";
 import type { MongoPixel } from "@models";
 
 export class CanvasRepository extends BaseRepository<MongoPixel> {
+    constructor(model: Model<MongoPixel>) {
+        super(model, ["_id"]);
+    }
+
     async fetch() {
-        return this.collection.find({}).sort({ _id: 1 }).toArray();
+        return this.findAll().sort({ _id: 1 }).lean();
     }
 
     async bulkUpdate(updates: MongoPixel[]) {
-        if (!updates.length) return;
-
-        await this.collection.bulkWrite(
+        await this.model.bulkWrite(
             updates.map((update) => {
                 const { _id, ...$set } = update;
 
@@ -20,12 +23,12 @@ export class CanvasRepository extends BaseRepository<MongoPixel> {
                     }
                 };
             }),
-            { retryWrites: true, writeConcern: { w: "majority" } }
+            { retryWrites: true }
         );
     }
 
     async clear(width: number, height: number, color: number) {
-        await this.collection.drop();
+        await this.model.deleteMany({});
 
         const pixels = Array.from({ length: width * height }, (_, _id) => ({
             _id,
@@ -34,7 +37,8 @@ export class CanvasRepository extends BaseRepository<MongoPixel> {
             color
         }));
 
-        await this.collection.insertMany(pixels);
+        await this.model.insertMany(pixels);
+
         return pixels;
     }
 }

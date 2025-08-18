@@ -7,19 +7,31 @@ export const getOne: RouteOptions<
     Server,
     IncomingMessage,
     ServerResponse,
-    { Querystring: { x: number; y: number } }
+    { Querystring: { x?: number; y?: number; id?: number } }
 > = {
     method: "GET",
     url: "/",
     schema: {
         querystring: {
-            type: "object",
-            properties: {
-                x: { type: "integer" },
-                y: { type: "integer" }
-            },
-            required: ["x", "y"],
-            additionalProperties: false
+            oneOf: [
+                {
+                    type: "object",
+                    properties: {
+                        x: { type: "integer" },
+                        y: { type: "integer" }
+                    },
+                    required: ["x", "y"],
+                    additionalProperties: false
+                },
+                {
+                    type: "object",
+                    properties: {
+                        id: { type: "integer" }
+                    },
+                    required: ["id"],
+                    additionalProperties: false
+                }
+            ]
         }
     },
     config: {
@@ -29,27 +41,28 @@ export const getOne: RouteOptions<
         }
     },
     async handler(request, response) {
-        const x = request.query.x;
-        const y = request.query.y;
-        const point = request.server.canvas.startPoint({ x, y });
-        const pixel = request.server.canvas.getPixel(point);
+        let point;
+        if (request.query.id === undefined)
+            point = request.server.canvas.startPoint({
+                x: request.query.x!,
+                y: request.query.y!
+            });
+        else point = request.query.id;
 
+        const pixel = request.server.canvas.getPixel(point);
         if (!pixel) throw new EntityNotFoundError("pixel");
 
         const author =
             pixel.author &&
-            (await request.server.cache.usersService.get({
-                _id: pixel.author
-            }));
+            (await request.server.repository.users.findById(pixel.author));
         const tag =
             pixel.tag &&
-            (await request.server.cache.tagsService.get({
-                _id: pixel.tag
-            }));
+            (await request.server.repository.tags.findById(pixel.tag));
 
         return response.code(200).send({
-            x,
-            y,
+            ...(request.query.id === undefined
+                ? { x: request.query.x, y: request.query.y }
+                : { id: request.query.id }),
             author:
                 author &&
                 normalize(

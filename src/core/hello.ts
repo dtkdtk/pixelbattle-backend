@@ -1,11 +1,30 @@
-export default [
-    "  _____    _                 _           _              _____   _     _ ",
-    " |  __ \\  (_)               | |         | |            |_   _| | |   | |",
-    " | |__) |  _  __  __   ___  | |   __ _  | |_    ___      | |   | |_  | |",
-    " |  ___/  | | \\ \\/ /  / _ \\ | |  / _` | | __|  / _ \\     | |   | __| | |",
-    " | |      | |  >  <  |  __/ | | | (_| | | |_  |  __/    _| |_  | |_  |_|",
-    " |_|      |_| /_/\\_\\  \\___| |_|  \\__,_|  \\__|  \\___|   |_____|  \\__| (_)",
-    "                                                                        ",
-    " by REIKKA (mirdukkkkk) & Pixelate It Team                                       ",
-    "                                                                        "
-].map((str) => console.log(str));
+import { readFileSync } from "fs";
+
+const splitAt = 60;
+
+export default (async function () {
+    const art = readFileSync(import.meta.dirname + "/hello.txt", {
+        encoding: "utf-8"
+    }).toString();
+    const lines = art.split("\n");
+
+    if (process.stdout.columns < lines[0].length) {
+        const top: string[] = [];
+        const bottom: string[] = [];
+
+        lines.forEach((line) => {
+            const left = line.slice(0, splitAt).padEnd(splitAt, " ");
+            const right = line.slice(splitAt);
+
+            top.push(left);
+            if (right.trim()) bottom.push(right);
+        });
+
+        console.log(top.join("\n"));
+        console.log(bottom.join("\n"));
+    } else console.log(art);
+
+    ["", " by REIKKA (mirdukkkkk) & Pixelate It", ""].map((str) =>
+        console.log(str)
+    );
+})();

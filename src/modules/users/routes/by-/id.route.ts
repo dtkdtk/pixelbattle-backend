@@ -35,35 +35,29 @@ export const getById: RouteOptions<
         }
     },
     async handler(request, response) {
-        const _id = Long.fromString(request.params.id);
-        const user = await request.server.cache.usersService.get({ _id });
+        const _id = BigInt(request.params.id);
+        const user = await request.server.repository.users.findById(_id);
 
         if (!user) {
             throw new EntityNotFoundError("user");
         }
 
-        return response.code(200).send(
-            normalize(
-                {
-                    ...user,
-                    token: undefined,
-                    email: undefined,
-                    connections: Object.fromEntries(
-                        Object.entries<PossibleConnectionData>(
-                            user.connections as unknown as Record<
-                                keyof AuthInfo,
-                                PossibleConnectionData
-                            >
-                        ).filter(
-                            ([_, value]) =>
-                                value &&
-                                (request.user?.userID === user.userID ||
-                                    value.visible)
-                        )
-                    )
-                },
-                ["_id", "tag"]
+        return response.code(200).send({
+            ...normalize(user, ["_id", "tag"]),
+            token: undefined,
+            email: undefined,
+            connections: Object.fromEntries(
+                Object.entries<PossibleConnectionData>(
+                    user.connections as unknown as Record<
+                        keyof AuthInfo,
+                        PossibleConnectionData
+                    >
+                ).filter(
+                    ([_, value]) =>
+                        value &&
+                        (request.user?._id === user._id || value.visible)
+                )
             )
-        );
+        });
     }
 };

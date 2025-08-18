@@ -10,7 +10,9 @@ export const favicon: RouteOptions = {
         }
     },
     handler: (_request, response) => {
-        const icon = Bun.file("assets/favicon.ico");
+        const icon = Bun.file(
+            import.meta.dirname + "/../../../../assets/favicon.ico"
+        );
 
         return response
             .header("Content-Type", "image/x-icon")

@@ -24,7 +24,6 @@ export const routes = fp(
             "plugins",
             "database",
             "repository",
-            "cache",
             "errorHandler",
             "oauth2",
             "websocket",

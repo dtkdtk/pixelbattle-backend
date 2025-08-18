@@ -1,12 +1,6 @@
 import { Envelope } from "@proto";
 import type { OperationOptions } from "@core/app";
 
-let nextId = 0;
-function getNextId() {
-    nextId = (nextId + 1) & 0xffff;
-    return nextId;
-}
-
 export const ping: OperationOptions = {
     payload: "ping",
     async handler(data, socket, request) {

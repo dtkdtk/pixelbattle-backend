@@ -31,9 +31,9 @@ export const getByName: RouteOptions<
         }
     },
     async handler(request, response) {
-        const tag = await request.server.cache.tagsService.get({
-            name: request.params.name
-        });
+        const tag = await request.server.repository.tags.findByName(
+            request.params.name
+        );
 
         if (!tag) {
             throw new EntityNotFoundError("tag");

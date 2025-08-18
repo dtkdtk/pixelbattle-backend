@@ -1,5 +1,4 @@
 import fp from "fastify-plugin";
-import { Long } from "mongodb";
 import type { MongoUser } from "@models";
 import type { RequestCookie } from "./types";
 
@@ -17,12 +16,12 @@ export const bindUser = fp(async function bindUser(app) {
 
         if (!cookies.token || !cookies.id) return;
 
-        const userCache = await request.server.cache.usersService.get({
-            token: cookies.token,
-            _id: Long.fromString(cookies.id)
-        });
+        const userCache = await request.server.repository.users.findById(
+            BigInt(cookies.id)
+        );
 
         if (!userCache) return;
+        if (userCache.token !== cookies.token) return;
 
         request.user = userCache;
     });

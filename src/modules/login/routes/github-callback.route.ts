@@ -51,7 +51,7 @@ export const githubCallback: RouteOptions<
         };
 
         protected getConnectionsUpdate(
-            existingUser: Omit<MongoUser, "_id"> | null,
+            existingUser: MongoUser | null,
             data: { id: string; username: string }
         ) {
             const connections = super.getConnectionsUpdate(existingUser, data);

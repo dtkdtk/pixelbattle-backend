@@ -1,7 +1,8 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { Long } from "mongodb";
 import { UserRole, type MongoUser, type UserAuthKey } from "@models";
 import { AuthLoginError, NotVerifiedEmailError } from "@core/errors/api";
-import { generator, getIpAddress, logger } from "@utils";
+import { generator, getIpAddress, logger, snowflake } from "@utils";
 import { idCookieParameters, tokenCookieParameters } from "../constants";
 import { config } from "@core/config";
 
@@ -45,9 +46,9 @@ export abstract class BaseOAuthHandler<
         const { id, email, username } = this.extractUserData(userInfo);
 
         const user = await this.findUser(id, email);
-        const { token: authToken, userID } = this.prepareUserData(user);
+        const { token: authToken, _id } = this.prepareUserData(user);
 
-        await this.updateUser(userID, user, {
+        await this.updateUser(_id, user, {
             id,
             email: email!,
             username,
@@ -55,7 +56,7 @@ export abstract class BaseOAuthHandler<
         });
 
         logger.loginComplete({
-            userID,
+            _id: _id.toString(),
             nickname: username,
             method: this.providerName,
             ip: getIpAddress(request)
@@ -67,32 +68,32 @@ export abstract class BaseOAuthHandler<
 
         return response
             .cookie("token", authToken, tokenCookieParameters)
-            .cookie("userid", userID, idCookieParameters)
+            .cookie("userid", _id.toString(), idCookieParameters)
             .redirect(config.frontend);
     };
 
     private async findUser(id: string, email: string | undefined) {
-        return this.server.database.users.findOne(
+        return this.server.repository.users.findOne(
             {
                 $or: [
                     { [`connections.${this.providerName}.id`]: id },
                     { email }
                 ]
             },
-            { projection: { _id: 0 }, hint: { userID: 1 } }
+            { _id: 0 }
         );
     }
 
-    private prepareUserData(user: Omit<MongoUser, "_id"> | null) {
+    private prepareUserData(user: MongoUser | null) {
         return {
             token: user?.token || generator.generateToken(),
-            userID: user?.userID || generator.generateId()
+            _id: user?._id || Long.fromBigInt(snowflake.generate())
         };
     }
 
     private async updateUser(
-        userID: string,
-        existingUser: Omit<MongoUser, "_id"> | null,
+        _id: Long,
+        existingUser: MongoUser | null,
         data: { id: string; email: string; username: string; authToken: string }
     ) {
         const updateData = {
@@ -109,15 +110,15 @@ export abstract class BaseOAuthHandler<
             })
         };
 
-        await this.server.database.users.updateOne(
-            { userID },
+        await this.server.repository.users.updateOne(
+            { _id },
             { $set: updateData },
-            { upsert: true, hint: { userID: 1 } }
+            { upsert: true }
         );
     }
 
     protected getUpdateData(
-        existingUser: Omit<MongoUser, "_id"> | null,
+        existingUser: MongoUser | null,
         data: { id: string; email: string; username: string; authToken: string }
     ) {
         return {
@@ -135,7 +136,7 @@ export abstract class BaseOAuthHandler<
     }
 
     protected getConnectionsUpdate(
-        existingUser: Omit<MongoUser, "_id"> | null,
+        existingUser: MongoUser | null,
         data: { id: string; username: string }
     ) {
         const connections =

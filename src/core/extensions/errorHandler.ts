@@ -18,6 +18,9 @@ export const errorHandler = fp(
         });
 
         app.setErrorHandler<ApiError>(async (error, _request, response) => {
+            if (import.meta.env.NODE_ENV === "development")
+                console.error(error);
+
             const payload: ApiErrorResponse = {
                 error: true,
                 message: error.message ?? "Internal error",

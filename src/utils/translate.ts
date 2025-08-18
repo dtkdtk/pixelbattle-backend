@@ -1,5 +1,3 @@
-import type { Point } from "@modules/canvas";
-
 export function number(hex: number): [number, number, number] {
     return [(hex >> 16) & 0xff, (hex >> 8) & 0xff, hex & 0xff];
 }

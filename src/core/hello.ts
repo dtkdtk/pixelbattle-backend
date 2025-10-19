@@ -24,7 +24,7 @@ export default (async function () {
         console.log(bottom.join("\n"));
     } else console.log(art);
 
-    ["", " by REIKKA (mirdukkkkk) & Pixelate It", ""].map((str) =>
+    [" by REIKKA (mirdukkkkk) & Pixelate It", ""].map((str) =>
         console.log(str)
     );
 })();

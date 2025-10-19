@@ -14,12 +14,11 @@ export const game = fp(
     async function game(app: FastifyInstance) {
         const _id = Long.fromString("433866403552854016");
 
-        let game = await app.models.Game.findById(_id);
-
-        if (!game) {
-            game = new app.models.Game({ _id, ...config.game });
-            await game.save();
-        }
+        const game = (await app.models.Game.findOneAndUpdate(
+            { _id },
+            { $setOnInsert: { ...config.game } },
+            { upsert: true }
+        ).lean()) as MongoGame;
 
         app.decorate("game", game);
     },

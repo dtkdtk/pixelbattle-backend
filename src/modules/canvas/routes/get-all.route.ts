@@ -10,7 +10,7 @@ export const getAll: RouteOptions = {
             timeWindow: 3000
         }
     },
-    handler: async function handler(request, response) {
+    async handler(request, response) {
         const canvas = await sharp(request.server.canvas.colors, {
             raw: {
                 width: request.server.canvas.width,

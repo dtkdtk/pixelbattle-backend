@@ -1,6 +1,9 @@
 import type { RouteOptions } from "fastify";
+import type { Long } from "mongodb";
+import { normalize } from "@utils";
 
 interface GameInformation {
+    _id: Long;
     name: string;
     cooldown: number;
     ended: boolean;
@@ -21,22 +24,20 @@ export const get: RouteOptions = {
         }
     },
     handler: (request, response) => {
-        const { game, websocketServer } = request.server;
-        const ip = new Set();
-
-        //websocketServer.clients.forEach((client) => ip.add(client.ip));
+        const {
+            game: { _id, name, cooldown, ended, ...canvas },
+            websocketServer
+        } = request.server;
 
         const info: GameInformation = {
-            name: game.name,
-            cooldown: game.cooldown,
-            ended: game.ended,
-            canvas: {
-                width: game.width,
-                height: game.height
-            },
-            online: websocketServer.clients.size //ip.size
+            _id,
+            name,
+            cooldown,
+            ended,
+            canvas,
+            online: websocketServer.clients.size
         };
 
-        return response.code(200).send(info);
+        return response.code(200).send(normalize(info));
     }
 };

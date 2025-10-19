@@ -19,3 +19,5 @@ export type OperationOptions = {
         >
     ) => Promise<any>;
 };
+
+export type OperationsMap = Map<string, Omit<OperationOptions, "payload">>;

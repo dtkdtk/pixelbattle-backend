@@ -2,42 +2,32 @@ FROM alpine:3 AS base
 
 RUN apk add --no-cache libstdc++ libgcc
 
-FROM base AS bun
+FROM base AS bun-install
 
 RUN apk add --no-cache curl bash
 RUN curl -fsSL https://bun.sh/install | bash
 
-FROM base AS install
+FROM base AS deps-install
 
-COPY --from=bun /root/.bun /root/.bun
+COPY --from=bun-install /root/.bun /root/.bun
 ENV PATH="/root/.bun/bin:${PATH}"
 
 WORKDIR /app
 
-COPY package.json bun.lock ./
+COPY package.json bun.lock .
 RUN bun install --frozen-lockfile
-
-FROM base AS build
-
-COPY --from=bun /root/.bun /root/.bun
-ENV PATH="/root/.bun/bin:${PATH}"
-
-WORKDIR /app
-
-COPY . .
-
-COPY --from=install /app/node_modules node_modules
-
-RUN bun run build
 
 FROM base
 
+COPY --from=bun-install /root/.bun /root/.bun
 ENV PATH="/root/.bun/bin:${PATH}"
 
 WORKDIR /app
 
-COPY --from=install /app/node_modules node_modules
+COPY --from=deps-install /app/node_modules node_modules
 
-COPY --from=build /app/dist dist
+COPY package.json tsconfig.json bun.lock .env .
+COPY src ./src
+COPY assets ./assets
 
-CMD ["bun", "run", "./dist/index.js"]
+CMD ["bun", "run", "./src/core/index.ts"]

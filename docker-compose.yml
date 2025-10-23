@@ -2,15 +2,14 @@ services:
   app:
     build: .
     ports:
-      - "8080:8080"
+      - "4040:8080"
     env_file:
       - .env
     environment:
       - NODE_ENV=production
       - DATABASE=mongodb://admin:admin@mongodb:27017/pixelbattle?authSource=admin
     depends_on:
-      mongodb:
-        condition: service_healthy
+      - mongodb
 
   mongodb:
     image: mongo:8

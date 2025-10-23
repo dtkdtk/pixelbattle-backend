@@ -1,5 +1,5 @@
 import fastify from "fastify";
-import { konsole } from "utils";
+import { konsole } from "@utils";
 import { operations, plugins, routes } from "@core/app";
 import {
     database,

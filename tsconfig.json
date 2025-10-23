@@ -23,16 +23,16 @@
         "noUnusedParameters": false,
         "noPropertyAccessFromIndexSignature": false,
 
-        "baseUrl": "./src",
+        "baseUrl": "./",
         "types": ["bun", "node", "ws", "uuid"],
 
         "paths": {
-            "@core/*": ["core/*"],
-            "@models": ["models"],
-            "@types": ["types"],
-            "@modules/*": ["modules/*"],
-            "@proto": ["proto/generated/js"],
-            "@utils": ["utils"]
+            "@core/*": ["src/core/*"],
+            "@models": ["src/models"],
+            "@types": ["src/types"],
+            "@modules/*": ["src/modules/*"],
+            "@proto": ["src/proto/generated/js"],
+            "@utils": ["src/utils"]
         }
     },
     "include": ["src/types/**/*.d.ts", "src/**/*.ts"],

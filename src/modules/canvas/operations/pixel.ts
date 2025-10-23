@@ -4,7 +4,7 @@ import { EntityNotFoundError } from "@core/errors/api";
 import { UserNotFoundError, UserCooldownError } from "@core/errors/websocket";
 import { UserRole } from "@models";
 import { Envelope } from "@proto";
-import { Cooldown } from "utils";
+import { Cooldown } from "@utils";
 import { PixelOutOfBoundsError } from "@core/errors/websocket/pixel";
 
 const cooldown = new Cooldown<Long>(60000);

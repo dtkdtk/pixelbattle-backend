@@ -8,5 +8,28 @@
     "bracketSpacing": true,
     "bracketSameLine": false,
     "arrowParens": "always",
-    "useTabs": false
+    "useTabs": false,
+    "overrides": [
+        {
+            "files": "*.yaml",
+            "options": {
+                "tabWidth": 2,
+                "useTabs": false
+            }
+        },
+        {
+            "files": "*.yml",
+            "options": {
+                "tabWidth": 2,
+                "useTabs": false
+            }
+        },
+        {
+            "files": ".prettierrc",
+            "options": {
+                "tabWidth": 2,
+                "useTabs": false
+            }
+        }
+    ]
 }

@@ -8,11 +8,6 @@ export class UserRepository extends BaseRepository<MongoUser> {
     }
 
     async findByUsername(username: string) {
-        const key = `username:${username}`;
-
-        const cached = this.cache.get(key);
-        if (cached) return cached;
-
-        return this.cacheMiss(this.model.findOne({ username }));
+        return this.findByField("username", username);
     }
 }

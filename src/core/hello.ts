@@ -2,7 +2,7 @@ import { readFileSync } from "fs";
 
 const splitAt = 60;
 
-export default (async function () {
+export default (function () {
     const art = readFileSync(import.meta.dirname + "/hello.txt", {
         encoding: "utf-8"
     }).toString();
@@ -24,7 +24,11 @@ export default (async function () {
         console.log(bottom.join("\n"));
     } else console.log(art);
 
-    [" by REIKKA (mirdukkkkk) & Pixelate It", ""].map((str) =>
-        console.log(str)
-    );
+    [
+        " by Pixelate It!",
+        "    - https://github.com/pixelate-it/",
+        "    mirdukkkkk",
+        "    - https://github.com/mirdukkkkk/",
+        ""
+    ].map((str) => console.log(str));
 })();

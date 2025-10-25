@@ -2,7 +2,7 @@ import fp from "fastify-plugin";
 import { CanvasRepository } from "@modules/canvas";
 import { UserRepository } from "@modules/users";
 import { TagRepository } from "@modules/tags";
-import { BanRepository } from "@modules/bans/repository";
+import { BanRepository } from "@modules/bans";
 
 declare module "fastify" {
     interface FastifyInstance {

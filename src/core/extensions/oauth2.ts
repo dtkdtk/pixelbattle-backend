@@ -31,10 +31,10 @@ export const oauth2 = fp(
                         secret: config.discord.bot.secret
                     }
                 },
-                cookie: {
+                /*cookie: {
                     secure: true,
                     sameSite: "lax"
-                },
+                },*/
                 startRedirectPath: "/login/discord",
                 callbackUri: config.redirectUri + "/login" + discordCallback.url
             });
@@ -50,9 +50,9 @@ export const oauth2 = fp(
                     },
                     auth: fastifyOauth2.GOOGLE_CONFIGURATION
                 },
-                cookie: {
+                /*cookie: {
                     secure: true
-                },
+                },*/
                 startRedirectPath: "/login/google",
                 callbackUri: config.redirectUri + "/login" + googleCallback.url
             });
@@ -68,9 +68,9 @@ export const oauth2 = fp(
                     },
                     auth: fastifyOauth2.TWITCH_CONFIGURATION
                 },
-                cookie: {
+                /*cookie: {
                     secure: true
-                },
+                },*/
                 startRedirectPath: "/login/twitch",
                 callbackUri: config.redirectUri + "/login" + twitchCallback.url,
                 tokenRequestParams: {
@@ -90,9 +90,9 @@ export const oauth2 = fp(
                     },
                     auth: fastifyOauth2.GITHUB_CONFIGURATION
                 },
-                cookie: {
+                /*cookie: {
                     secure: true
-                },
+                },*/
                 startRedirectPath: "/login/github",
                 callbackUri: config.redirectUri + "/login" + githubCallback.url
             });

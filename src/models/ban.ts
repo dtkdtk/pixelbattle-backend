@@ -1,10 +1,10 @@
 import { Schema, model } from "mongoose";
-import type { Long } from "mongodb";
+import { snowflake } from "@utils";
 
 export interface MongoBan {
-    _id: Long;
-    moderator: Long;
-    player: Long;
+    _id: bigint;
+    moderator: bigint;
+    player: bigint;
     reason: string | null;
     until: Date | null;
 }
@@ -13,7 +13,8 @@ const banSchema = new Schema<MongoBan>(
     {
         _id: {
             type: Schema.Types.BigInt,
-            required: true
+            required: true,
+            default: () => snowflake.generate()
         },
         moderator: {
             type: Schema.Types.BigInt,

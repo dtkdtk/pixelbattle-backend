@@ -1,8 +1,9 @@
 import { Schema, model } from "mongoose";
-import { Int32, type Long } from "mongodb";
+import { Int32 } from "mongodb";
+import { snowflake } from "@utils";
 
 export interface MongoGame {
-    _id: Long;
+    _id: bigint;
     name: string;
     cooldown: number;
     ended: boolean;
@@ -14,7 +15,8 @@ const gameSchema = new Schema<MongoGame>(
     {
         _id: {
             type: Schema.Types.BigInt,
-            required: true
+            required: true,
+            default: () => snowflake.generate()
         },
         name: {
             type: Schema.Types.String,

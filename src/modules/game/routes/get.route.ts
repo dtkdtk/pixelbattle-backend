@@ -3,7 +3,7 @@ import type { Long } from "mongodb";
 import { normalize } from "@utils";
 
 interface GameInformation {
-    _id: Long;
+    _id: bigint;
     name: string;
     cooldown: number;
     ended: boolean;

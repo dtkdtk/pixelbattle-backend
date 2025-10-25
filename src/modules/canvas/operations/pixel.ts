@@ -1,13 +1,12 @@
-import type { Long } from "mongodb";
 import type { OperationOptions } from "@core/app";
 import { EntityNotFoundError } from "@core/errors/api";
 import { UserNotFoundError, UserCooldownError } from "@core/errors/websocket";
 import { UserRole } from "@models";
 import { Envelope } from "@proto";
 import { Cooldown } from "@utils";
-import { PixelOutOfBoundsError } from "@core/errors/websocket/pixel";
+import { PixelOutOfBoundsError } from "@core/errors/websocket";
 
-const cooldown = new Cooldown<Long>(60000);
+const cooldown = new Cooldown<bigint>(60000);
 
 export const pixel: OperationOptions = {
     payload: "pixel",

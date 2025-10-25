@@ -87,12 +87,12 @@ export abstract class BaseOAuthHandler<
     private prepareUserData(user: MongoUser | null) {
         return {
             token: user?.token || generator.generateToken(),
-            _id: user?._id || Long.fromBigInt(snowflake.generate())
+            _id: user?._id || BigInt(snowflake.generate())
         };
     }
 
     private async updateUser(
-        _id: Long,
+        _id: bigint,
         existingUser: MongoUser | null,
         data: { id: string; email: string; username: string; authToken: string }
     ) {

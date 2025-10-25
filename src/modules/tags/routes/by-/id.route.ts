@@ -33,7 +33,7 @@ export const getById: RouteOptions<
         }
     },
     async handler(request, response) {
-        const id = Long.fromString(request.params.id);
+        const id = BigInt(request.params.id);
         const tag = await request.server.repository.tags.findById(id);
 
         if (!tag) {

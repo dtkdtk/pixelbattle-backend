@@ -8,11 +8,6 @@ export class TagRepository extends BaseRepository<MongoTag> {
     }
 
     async findByName(name: string) {
-        const key = `name:${name}`;
-
-        const cached = this.cache.get(key);
-        if (cached) return cached;
-
-        return this.cacheMiss(this.model.findOne({ name }));
+        return this.findByField("name", name);
     }
 }

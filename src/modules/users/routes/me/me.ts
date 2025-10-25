@@ -1,11 +1,11 @@
 import type { RouteOptions } from "fastify";
 import type { AuthInfo } from "@models";
-import type { PossibleConnectionData } from "./types";
+import type { PossibleConnectionData } from "../types";
 import { normalize } from "@utils";
 
 export const getMe: RouteOptions = {
     method: "GET",
-    url: "/me",
+    url: "/",
     schema: {},
     config: {
         rateLimit: {

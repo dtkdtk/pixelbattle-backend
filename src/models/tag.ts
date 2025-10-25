@@ -1,17 +1,18 @@
 import { Schema, model } from "mongoose";
-import type { Long } from "mongodb";
+import { snowflake } from "@utils";
 
 export interface MongoTag {
-    _id: Long;
+    _id: bigint;
     name: string;
-    creator: Long;
+    creator: bigint;
 }
 
 const tagSchema = new Schema<MongoTag>(
     {
         _id: {
             type: Schema.Types.BigInt,
-            required: true
+            required: true,
+            default: () => snowflake.generate()
         },
         name: {
             type: Schema.Types.String,

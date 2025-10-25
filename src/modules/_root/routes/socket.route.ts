@@ -1,5 +1,4 @@
 import type { RouteOptions } from "fastify";
-import type * as WebSocket from "ws";
 import type { IncomingMessage, Server, ServerResponse } from "http";
 import { Envelope } from "@proto";
 import { TemporaryId } from "@utils";
@@ -48,10 +47,8 @@ export const socket: RouteOptions<
         socket.on("message", (data: Uint8Array, isBinary) => {
             try {
                 if (!isBinary) return socket.close(1003);
-                if (isDevelopment)
-                    console.log(`Message size: ${data.byteLength}`);
-                if (data.byteLength > 1024) return socket.close(1009);
-                if (data.byteLength < 10) return socket.close(1007);
+                if (data.byteLength > 256) return socket.close(1009);
+                if (data.byteLength < 8) return socket.close(1007);
 
                 const message = Envelope.decode(data);
 
@@ -90,6 +87,7 @@ export const socket: RouteOptions<
                         socket.send(errorMessage);
                     });
             } catch (err) {
+                console.error(err);
                 return socket.close(1007);
             }
         });

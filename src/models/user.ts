@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
-import { Int32, type Long } from "mongodb";
-import { generator } from "@utils";
+import { Int32 } from "mongodb";
+import { generator, snowflake } from "@utils";
 
 export enum UserRole {
     User = 0,
@@ -25,15 +25,15 @@ export type UserAuth = {
 };
 
 export interface MongoUser {
-    _id: Long;
+    _id: bigint;
     email: string;
     username: string;
-    tag: Long | null;
+    tag: bigint | null;
     role: UserRole;
     token: string;
     badges: number;
     karma: number;
-    banned: Long | null;
+    banned: bigint | null;
     connections: UserAuth;
 }
 
@@ -60,7 +60,8 @@ const userSchema = new Schema<MongoUser>(
     {
         _id: {
             type: Schema.Types.BigInt,
-            required: true
+            required: true,
+            default: () => snowflake.generate()
         },
         email: {
             type: Schema.Types.String,

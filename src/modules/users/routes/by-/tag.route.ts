@@ -1,6 +1,5 @@
 import type { RouteOptions } from "fastify";
 import type { IncomingMessage, Server, ServerResponse } from "http";
-import type { Long } from "mongodb";
 
 export const getByTag: RouteOptions<
     Server,
@@ -55,7 +54,7 @@ export const getByTag: RouteOptions<
         const data = await request.server.repository.tags.findByName(tag);
 
         let available = 0;
-        let list: { _id: Long }[] = [];
+        let list: { _id: bigint }[] = [];
 
         if (data) {
             available = await request.server.repository.users.countDocuments({

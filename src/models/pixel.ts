@@ -1,10 +1,10 @@
 import { Schema, model } from "mongoose";
-import { Int32, type Long } from "mongodb";
+import { Int32 } from "mongodb";
 
 export interface MongoPixel {
     _id: number;
-    author: Long | null;
-    tag: Long | null;
+    author: bigint | null;
+    tag: bigint | null;
     color: number;
 }
 

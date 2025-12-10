@@ -3,20 +3,22 @@ import type { IncomingMessage, Server, ServerResponse } from "http";
 import type * as WebSocket from "ws";
 import type { Envelope } from "@proto";
 
+export type OperationRequestType = FastifyRequest<
+       {
+           Querystring: {
+               z: string;
+           };
+       },
+       Server<typeof IncomingMessage, typeof ServerResponse>,
+       IncomingMessage
+   >;
+
 export type OperationOptions = {
     payload: string;
     handler: (
         data: Envelope,
         socket: WebSocket.WebSocket,
-        request: FastifyRequest<
-            {
-                Querystring: {
-                    z: string;
-                };
-            },
-            Server<typeof IncomingMessage, typeof ServerResponse>,
-            IncomingMessage
-        >
+        request: OperationRequestType,
     ) => Promise<any>;
 };
 

@@ -24,7 +24,7 @@ export class CanvasService {
 
         if (pixels.length !== this.width * this.height) {
             throw new Error(
-                `Canvas size mismatch. Expected ${this.width * this.height} pixels, got ${this.pixels.size}`
+                `Canvas size mismatch. Expected ${this.width * this.height} pixels, got ${pixels.length}`
             );
         }
 

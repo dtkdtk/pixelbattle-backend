@@ -12,8 +12,7 @@ export const canvas = fp(
     async function canvas(app) {
         const canvasService = new CanvasService(
             app.repository.canvas,
-            app.game.width,
-            app.game.height
+            app.game
         );
 
         function updateDatabase() {
@@ -21,7 +20,7 @@ export const canvas = fp(
         }
 
         await canvasService.init();
-        if (!app.game.ended)
+        if (!app.game.data.ended)
             canvasService.syncInterval = setInterval(
                 updateDatabase,
                 config.syncTime

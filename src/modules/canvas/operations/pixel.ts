@@ -1,10 +1,9 @@
 import type { OperationOptions } from "@core/app";
-import { EntityNotFoundError } from "@core/errors/api";
-import { UserNotFoundError, UserCooldownError } from "@core/errors/websocket";
+import { CanvasResizingProcessError, EntityNotFoundError } from "@core/errors/api";
+import { PixelOutOfBoundsError, UserCooldownError, UserNotFoundError } from "@core/errors/websocket";
 import { UserRole } from "@models";
 import { Envelope } from "@proto";
 import { Cooldown } from "@utils";
-import { PixelOutOfBoundsError } from "@core/errors/websocket";
 
 const cooldown = new Cooldown<bigint>(60000);
 
@@ -19,6 +18,9 @@ export const pixel: OperationOptions = {
 
         if (typeof id !== "number" || typeof color !== "number")
             return console.error("Invalid pixel data");
+        if (request.server.canvas.canvasResizeProcess)
+            throw new CanvasResizingProcessError();
+
         if (
             id < 0 ||
             id >= request.server.canvas.width * request.server.canvas.height
@@ -29,7 +31,7 @@ export const pixel: OperationOptions = {
 
         const pixel = request.server.canvas.getPixel(id);
 
-        cooldown.set(request.user._id, request.server.game.cooldown);
+        cooldown.set(request.user._id, request.server.game.data.cooldown);
 
         if (!pixel) throw new EntityNotFoundError("pixel");
 

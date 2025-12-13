@@ -1,26 +1,19 @@
-import fp from "fastify-plugin";
+import { GameService } from "@modules/game/service";
 import type { FastifyInstance } from "fastify";
-import { Long } from "mongodb";
-import type { MongoGame } from "@models";
-import { config } from "@core/config";
+import fp from "fastify-plugin";
 
 declare module "fastify" {
     interface FastifyInstance {
-        game: MongoGame;
+        game: GameService;
     }
 }
 
 export const game = fp(
     async function game(app: FastifyInstance) {
-        const _id = Long.fromString("433866403552854016");
+        const gameService = new GameService(app.models.Game);
+        await gameService.init();
 
-        const game = (await app.models.Game.findOneAndUpdate(
-            { _id },
-            { $setOnInsert: { ...config.game } },
-            { upsert: true }
-        ).lean()) as MongoGame;
-
-        app.decorate("game", game);
+        app.decorate("game", gameService);
     },
     { name: "game", dependencies: ["database"] }
 );

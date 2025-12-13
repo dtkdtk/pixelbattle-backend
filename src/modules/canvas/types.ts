@@ -6,3 +6,6 @@ export interface Point {
 }
 
 export type PixelUpdate = Omit<MongoPixel, "_id">;
+
+export type CanvasAlign = "center" | "left-top" | "left-bottom"
+    | "right-top" | "right-bottom";

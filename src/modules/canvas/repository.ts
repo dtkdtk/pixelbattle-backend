@@ -11,7 +11,7 @@ export class CanvasRepository extends BaseRepository<MongoPixel> {
         return this.findAll().sort({ _id: 1 }).lean();
     }
 
-    async bulkUpdate(updates: MongoPixel[]) {
+    async bulkUpdate(updates: MongoPixel[], options?: { upsert?: boolean }) {
         await this.model.bulkWrite(
             updates.map((update) => {
                 const { _id, ...$set } = update;
@@ -19,7 +19,8 @@ export class CanvasRepository extends BaseRepository<MongoPixel> {
                 return {
                     updateOne: {
                         filter: { _id },
-                        update: { $set }
+                        update: { $set },
+                        upsert: options?.upsert ?? false,
                     }
                 };
             }),

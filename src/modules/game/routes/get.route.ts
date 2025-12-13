@@ -1,6 +1,5 @@
-import type { RouteOptions } from "fastify";
-import type { Long } from "mongodb";
 import { normalize } from "@utils";
+import type { RouteOptions } from "fastify";
 
 interface GameInformation {
     _id: bigint;
@@ -25,7 +24,7 @@ export const get: RouteOptions = {
     },
     handler: (request, response) => {
         const {
-            game: { _id, name, cooldown, ended, ...canvas },
+            game: { data: { _id, name, cooldown, ended, ...canvas } },
             websocketServer
         } = request.server;
 

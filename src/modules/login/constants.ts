@@ -1,20 +1,19 @@
 import { config } from "@core/config";
 import type { CookieSerializeOptions } from "@fastify/cookie";
 
+const isProd = process.env.NODE_ENV === "production";
+const COOKIE_DOMAIN = isProd ? ".pixelbattle.fun" : undefined;
+
 export const tokenCookieParameters: CookieSerializeOptions = {
-    domain: config.redirectUri.split("//")[1].split(":")[0],
-    expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14), // 2 weeks
+    domain: COOKIE_DOMAIN,
     path: "/",
-    httpOnly: true,
-    sameSite: "none",
-    secure: true
+    expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
+    httpOnly: false, // MUST BE TRUE
+    sameSite: isProd ? "lax" : "lax",
+    secure: isProd
 };
 
 export const idCookieParameters: CookieSerializeOptions = {
-    domain: config.frontend.split("//")[1].split(":")[0],
-    expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14), // 2 weeks
-    path: "/",
-    httpOnly: false,
-    sameSite: "none",
-    secure: true
+    ...tokenCookieParameters,
+    httpOnly: false
 };

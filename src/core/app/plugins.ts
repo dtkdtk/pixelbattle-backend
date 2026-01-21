@@ -11,7 +11,7 @@ import { config } from "@core/config";
 export const plugins = fp(
     async function plugins(app: FastifyInstance) {
         await app.register(fastifyCors, {
-            origin: config.frontend,
+            origin: config.frontend.origin,
             credentials: true,
             methods: ["GET", "PUT", "POST", "PATCH", "OPTIONS"],
             allowedHeaders: ["Content-Type", "Authorization"],

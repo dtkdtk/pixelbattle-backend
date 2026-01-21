@@ -36,7 +36,10 @@ export const oauth2 = fp(
                     sameSite: "lax"
                 },*/
                 startRedirectPath: "/login/discord",
-                callbackUri: config.redirectUri + "/login" + discordCallback.url
+                callbackUri: new URL(
+                    "/login" + discordCallback.url,
+                    config.backend
+                ).href
             });
 
         if (config.google.id)
@@ -54,7 +57,10 @@ export const oauth2 = fp(
                     secure: true
                 },*/
                 startRedirectPath: "/login/google",
-                callbackUri: config.redirectUri + "/login" + googleCallback.url
+                callbackUri: new URL(
+                    "/login" + googleCallback.url,
+                    config.backend
+                ).href
             });
 
         if (config.twitch.id)
@@ -72,7 +78,10 @@ export const oauth2 = fp(
                     secure: true
                 },*/
                 startRedirectPath: "/login/twitch",
-                callbackUri: config.redirectUri + "/login" + twitchCallback.url,
+                callbackUri: new URL(
+                    "/login" + twitchCallback.url,
+                    config.backend
+                ).href,
                 tokenRequestParams: {
                     client_id: config.twitch.id,
                     client_secret: config.twitch.secret
@@ -94,7 +103,10 @@ export const oauth2 = fp(
                     secure: true
                 },*/
                 startRedirectPath: "/login/github",
-                callbackUri: config.redirectUri + "/login" + githubCallback.url
+                callbackUri: new URL(
+                    "/login" + githubCallback.url,
+                    config.backend
+                ).href
             });
     },
     { name: "oauth2" }

@@ -36,6 +36,6 @@ export const config = {
     expiresIn: 30000,
     syncTime: 15000,
     moderatorCooldown: 50,
-    frontend: import.meta.env.FRONTEND_URL!,
-    redirectUri: import.meta.env.REDIRECT!
+    frontend: new URL(import.meta.env.FRONTEND_URL!),
+    backend: new URL(import.meta.env.BACKEND_URL!)
 };

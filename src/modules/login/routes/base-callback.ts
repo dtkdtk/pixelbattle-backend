@@ -68,7 +68,7 @@ export abstract class BaseOAuthHandler<
         return response
             .cookie("token", authToken, tokenCookieParameters)
             .cookie("id", _id.toString(), idCookieParameters)
-            .redirect(config.frontend);
+            .redirect(config.frontend.href);
     };
 
     private async findUser(id: string, email: string | undefined) {

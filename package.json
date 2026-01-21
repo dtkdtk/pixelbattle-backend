@@ -8,9 +8,9 @@
     "type": "module",
     "private": true,
     "scripts": {
-        "production": "bun run dist/index.js",
-        "build": "bun build --target bun ./src/core/index.ts --outdir ./dist ",
-        "test": "bun run src/core/index.ts"
+        "prod": "bun run src/core/index.ts",
+        "dev": "bun --watch run src/core/index.ts",
+        "id": "bun run scripts/id.js"
     },
     "devDependencies": {
         "@types/bun": "^1.3.1",

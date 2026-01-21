@@ -3,7 +3,7 @@ import { CacheManager } from "@core/database";
 
 const cache = new CacheManager<{
     pixels: { all: number; used: number; unused: number };
-    tags: { _id: string; name: string | null; count: number }[];
+    tags: { id: string; name: string | null; count: number }[];
 }>();
 
 export const getTags: RouteOptions = {
@@ -39,16 +39,15 @@ export const getTags: RouteOptions = {
             .sort(([, a], [, b]) => b - a)
             .slice(0, 10);
 
-        const tagIds = top.map(([id]) => id);
         const tagDocs = await request.server.models.Tag.find({
-            _id: { $in: tagIds }
+            _id: { $in: top.map(([id]) => id) }
         }).lean();
         const tagMap = Object.fromEntries(
             tagDocs.map((t) => [t._id.toString(), t.name])
         );
 
         const topWithNames = top.map(([id, count]) => ({
-            _id: id,
+            id,
             name: tagMap[id] || null,
             count
         }));

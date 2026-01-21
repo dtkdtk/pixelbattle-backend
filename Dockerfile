@@ -14,7 +14,7 @@ ENV PATH="/root/.bun/bin:${PATH}"
 
 WORKDIR /app
 
-COPY package.json bun.lock .
+COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 
 FROM base
@@ -26,7 +26,7 @@ WORKDIR /app
 
 COPY --from=deps-install /app/node_modules node_modules
 
-COPY package.json tsconfig.json bun.lock .env .
+COPY package.json tsconfig.json bun.lock ./
 COPY src ./src
 COPY assets ./assets
 

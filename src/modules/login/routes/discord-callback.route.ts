@@ -17,9 +17,10 @@ export const discordCallback: RouteOptions<
         querystring: {
             type: "object",
             properties: {
-                code: { type: "string" }
+                code: { type: "string" },
+                state: { type: "string" }
             },
-            required: ["code"],
+            required: ["code", "state"],
             additionalProperties: false
         }
     },

@@ -1,5 +1,4 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { Long } from "mongodb";
 import { UserRole, type MongoUser, type UserAuthKey } from "@models";
 import { AuthLoginError, NotVerifiedEmailError } from "@core/errors/api";
 import { generator, getIpAddress, logger, snowflake } from "@utils";
@@ -31,7 +30,7 @@ export abstract class BaseOAuthHandler<
         this.request = request;
         this.server = request.server;
 
-        const token = await this.getOAuthToken(request).catch(() => {
+        const token = await this.getOAuthToken(request).catch((err) => {
             throw new AuthLoginError();
         });
         if (!token) throw new AuthLoginError();
@@ -68,26 +67,20 @@ export abstract class BaseOAuthHandler<
 
         return response
             .cookie("token", authToken, tokenCookieParameters)
-            .cookie("userid", _id.toString(), idCookieParameters)
+            .cookie("id", _id.toString(), idCookieParameters)
             .redirect(config.frontend);
     };
 
     private async findUser(id: string, email: string | undefined) {
-        return this.server.repository.users.findOne(
-            {
-                $or: [
-                    { [`connections.${this.providerName}.id`]: id },
-                    { email }
-                ]
-            },
-            { _id: 0 }
-        );
+        return this.server.repository.users.findOne({
+            $or: [{ [`connections.${this.providerName}.id`]: id }, { email }]
+        });
     }
 
     private prepareUserData(user: MongoUser | null) {
         return {
-            token: user?.token || generator.generateToken(),
-            _id: user?._id || BigInt(snowflake.generate())
+            token: user?.token ?? generator.generateToken(),
+            _id: user?._id ?? BigInt(snowflake.generate())
         };
     }
 

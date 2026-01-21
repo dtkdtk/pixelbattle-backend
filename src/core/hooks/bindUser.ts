@@ -1,4 +1,5 @@
 import fp from "fastify-plugin";
+import { constantTimeCompare } from "@utils";
 import type { MongoUser } from "@models";
 import type { RequestCookie } from "./types";
 
@@ -12,17 +13,23 @@ export const bindUser = fp(async function bindUser(app) {
     app.decorateRequest("user", null);
 
     app.addHook("preHandler", async (request) => {
-        const cookies: RequestCookie = request.cookies;
+        const { next_token, next_id }: RequestCookie = request.cookies;
 
-        if (!cookies.token || !cookies.id) return;
+        if (!next_token || !next_id) return;
 
-        const userCache = await request.server.repository.users.findById(
-            BigInt(cookies.id)
-        );
+        try {
+            const id = BigInt(next_id);
+            const user = await request.server.repository.users.findById(id);
 
-        if (!userCache) return;
-        if (userCache.token !== cookies.token) return;
+            if (!user || !user.token) return;
 
-        request.user = userCache;
+            if (!constantTimeCompare(user.token, next_token)) {
+                return;
+            }
+
+            request.user = user;
+        } catch (e) {
+            return;
+        }
     });
 });

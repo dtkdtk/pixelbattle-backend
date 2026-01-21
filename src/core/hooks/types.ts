@@ -1,4 +1,4 @@
 export interface RequestCookie {
-    token?: string;
-    id?: string;
+    next_token?: string;
+    next_id?: string;
 }

@@ -66,8 +66,8 @@ export abstract class BaseOAuthHandler<
         }
 
         return response
-            .cookie("token", authToken, tokenCookieParameters)
-            .cookie("id", _id.toString(), idCookieParameters)
+            .cookie("next_token", authToken, tokenCookieParameters)
+            .cookie("next_id", _id.toString(), idCookieParameters)
             .redirect(config.frontend.href);
     };
 
